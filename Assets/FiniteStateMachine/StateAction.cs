@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Reflection;
 using System.Collections.Generic;
+
 [ExecuteInEditMode]
 public class IStateAction : MonoBehaviour {
 	public string Name = "";

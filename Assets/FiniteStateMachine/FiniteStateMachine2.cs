@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 public class FiniteStateMachine2 : MonoBehaviour {
-	FiniteState CurrentState = null;
+	public FiniteState CurrentState = null;
 
 	/// <summary>
 	/// Complete state-transition map.  Key'd to (state,transition) pairs.
@@ -29,7 +29,8 @@ public class FiniteStateMachine2 : MonoBehaviour {
 		component.enabled = false;
 		
 		StateTransition2 st = new StateTransition2(fromState,component);
-		
+		Debug.Log("Adding new transition type " + component.GetType() + " from state " + fromState.Name + " to state " + toState.Name);
+			
 		// make sure to clear out the ununused component
 		if(StateTransitions.ContainsKey(st)){
 			Destroy(component);

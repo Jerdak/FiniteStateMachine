@@ -32,10 +32,12 @@ class StateTransition
         return other != null && this.CurrentState == other.CurrentState && this.Command == other.Command;
     }
 }
+
+//[System.Serializable]
 class StateTransition2
 {
-    readonly FiniteState CurrentState;
-    readonly ITransitionCommand2 TransitionComponent;
+    public FiniteState CurrentState;
+    public ITransitionCommand2 TransitionComponent;
 
     public StateTransition2(FiniteState currentState, ITransitionCommand2 component)
     {

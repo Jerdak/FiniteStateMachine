@@ -18,7 +18,7 @@ public class ITransitionCommand2 : MonoBehaviour {
 	public string Enabled = "false";
 	public string Name = "";
 	public string Description = "";
-	public FiniteStateMachine2 FSM { get; set; }
+	public FiniteStateMachine2 FSM = null;
 	
 	
 	public void NotifyFsm(){
@@ -66,7 +66,7 @@ public class OnTimer2 : ITransitionCommand2 {
 	public void Start(){
 		ElapsedTime = 0.0f;
 	}
-	
+
 	public void Update(){
 		ElapsedTime += Time.deltaTime;
 		if (ElapsedTime >= Delay)NotifyFsm();
