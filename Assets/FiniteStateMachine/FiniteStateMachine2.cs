@@ -3,21 +3,38 @@ using System.Collections.Generic;
 
 public class FiniteStateMachine2 : MonoBehaviour {
 	public FiniteState CurrentState = null;
+	public FiniteState StartState = null;
 
-	/// <summary>
-	/// Complete state-transition map.  Key'd to (state,transition) pairs.
-	/// </summary>
-	Dictionary<FiniteState,List<ITransitionCommand2>> StateTransitionMap = new Dictionary<FiniteState, List<ITransitionCommand2>>();
-	
 	/// <summary>
 	/// Per state transition list, used to limit FSM's Update() to only the current states possible transitions
 	/// </summary>
 	Dictionary<StateTransition2,FiniteState> StateTransitions = new Dictionary<StateTransition2, FiniteState>();
 	
+	[SerializeField]
+	public List<StateTransitionState> StateCache = new List<StateTransitionState>();
+	
 	/// <summary>
 	/// List of transitions for the current state only
 	/// </summary>
 	List<ITransitionCommand2> ActiveTransitionList = null;
+
+	
+	void Awake() {
+		//Unity serialization doesn't work w/ Generic.Dictionary, rebuild from state list
+		foreach(StateTransitionState sts in StateCache){
+			StateTransition2 st = new StateTransition2(sts.StartState,sts.Transition);
+			StateTransitions.Add(st,sts.EndState);
+			Debug.Log("Rebuilding transition from " + sts.StartState.Name + " to " + sts.EndState.Name);
+			Debug.Log("  - Rebuild Hash: " + st.GetHashCode());
+			Debug.Log("  - Hash start state: " + sts.StartState.GetHashCode());
+			Debug.Log("  - Hash transition: " + sts.Transition.GetHashCode());
+			Debug.Log("  - Hash End State : " + sts.StartState.GetHashCode());
+		}	
+		StateTransition2 st1 = new StateTransition2(StateCache[0].StartState,StateCache[0].Transition);
+		StateTransition2 st2 = new StateTransition2(StartState,StateCache[0].Transition);
+		Debug.Log("Comparison Hash.  " + st1.GetHashCode() + "==" + st2.GetHashCode());
+		Debug.Log("Comparison Equl.  " + (st1 == st2).ToString());
+	}
 	
 	/// <summary>
 	/// Add a new transition from 1 state to another.
@@ -30,7 +47,7 @@ public class FiniteStateMachine2 : MonoBehaviour {
 		
 		StateTransition2 st = new StateTransition2(fromState,component);
 		Debug.Log("Adding new transition type " + component.GetType() + " from state " + fromState.Name + " to state " + toState.Name);
-			
+		Debug.Log("  - Hash: " + st.GetHashCode());	
 		// make sure to clear out the ununused component
 		if(StateTransitions.ContainsKey(st)){
 			Destroy(component);
@@ -38,10 +55,11 @@ public class FiniteStateMachine2 : MonoBehaviour {
 			return null;
 		}
 		StateTransitions.Add(st,toState);
-		if(!StateTransitionMap.ContainsKey(fromState)){
-			StateTransitionMap[fromState] = new List<ITransitionCommand2>();
-		}
-		StateTransitionMap[fromState].Add(component);
+		
+		//add transition to the from state (states store outgoing states only)
+		fromState.Transitions.Add(component);
+		StateCache.Add(new StateTransitionState{StartState = fromState, Transition = component, EndState = toState});
+		Debug.Log("Added transition type");
 		return component;
 	}
 	
@@ -65,6 +83,15 @@ public class FiniteStateMachine2 : MonoBehaviour {
 	/// </summary>
 	public void Transition(ITransitionCommand2 transition){
 		StateTransition2 st = new StateTransition2(CurrentState,transition);
+		Debug.Log("Trying to transition from state: " + CurrentState.Name);
+		Debug.Log("  - Hash Full: " + st.GetHashCode());
+		Debug.Log("  - Hash CurrentState: " + CurrentState.GetHashCode());
+		Debug.Log("  - Hash transition: " + transition.GetHashCode());
+		
+		StateTransition2 st1 = new StateTransition2(StateCache[0].StartState,StateCache[0].Transition);
+		StateTransition2 st2 = new StateTransition2(CurrentState,StateCache[0].Transition);
+		Debug.Log("Comparison2 Hash.  " + st1.GetHashCode() + "==" + st2.GetHashCode());
+		Debug.Log("Comparison2 Equl.  " + (st1 == st2).ToString());
 		ChangeState(StateTransitions[st]);
 	}
 	
@@ -118,12 +145,13 @@ public class FiniteStateMachine2 : MonoBehaviour {
 		CurrentState.EnterState(gameObject);
 
 		// Change the transition component list to the active states transitions and enable them
-		ActiveTransitionList = StateTransitionMap[CurrentState];
+		ActiveTransitionList = CurrentState.Transitions;//StateTransitionMap[CurrentState];
 		EnableActiveComponents();
 	}
-		
-	void Start(){
+
 	
+	void Start(){
+		ChangeState(StartState);
 	}
 	void Update(){
 

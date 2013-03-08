@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEditor;
 using System.Reflection;
 using System.Collections.Generic;
 
@@ -24,6 +23,16 @@ namespace StateActions {
 		public override void Act(){
 			PressurePlate pp = gameObject.GetComponent<PressurePlate>();
 			pp.Target.renderer.material.color = NewColor;
+		}
+	}
+	public class SA_PressurePlateLight : IStateAction {
+		public bool State = false;
+		public override void Act(){
+			PressurePlate pp = gameObject.GetComponent<PressurePlate>();
+			foreach(GameObject target in pp.Targets){
+				Light light = target.GetComponent<Light>();
+				light.enabled = !light.enabled;
+			}
 		}
 	}
 	public class SA_SetVariable : IStateAction {

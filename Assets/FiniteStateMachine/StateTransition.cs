@@ -53,6 +53,10 @@ class StateTransition2
     public override bool Equals(object obj)
     {
         StateTransition2 other = obj as StateTransition2;
+		Debug.Log("Equality");
+		Debug.Log("  Null?: - " + (other == null).ToString());
+		Debug.Log("  States?: - " + (this.CurrentState == other.CurrentState).ToString());
+		Debug.Log("  Trans'?: - " + (this.TransitionComponent == other.TransitionComponent).ToString());
         return 	other != null && 
 				this.CurrentState == other.CurrentState && 
 				this.TransitionComponent == other.TransitionComponent;

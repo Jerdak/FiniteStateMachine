@@ -3,7 +3,7 @@ using System.Collections;
 
 [RequireComponent (typeof (FiniteStateMachine2))]
 public class FiniteStateExamples : MonoBehaviour {
-	public enum ExampleType {ClickToggle,TimedToggle,Toggle2,ToggleMultiColor,ClickTimedToggle,PressurePlate};
+	public enum ExampleType {ClickToggle,TimedToggle,Toggle2,ToggleMultiColor,ClickTimedToggle,PressurePlate,PressurePlateLight};
 	
 	public ExampleType Example;
 	static void DebugTest(FiniteStateMachine2 fsm) {
@@ -340,7 +340,36 @@ public class FiniteStateExamples : MonoBehaviour {
 		fsm.ChangeState(unpressed_state);
 		
 	}
-	
+	static void DebugPressurePlateLight(FiniteStateMachine2 fsm){
+		FiniteState unpressed_state = new FiniteState();
+		FiniteState pressed_state = new FiniteState();
+		
+		{
+			//unpressed_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_PressurePlateLight>() as IStateAction;
+			//StateActions.SA_PressurePlateLight sa = unpressed_state.EnterAction as StateActions.SA_PressurePlateLight;
+			//sa.State = false;
+		}
+		
+		{
+			pressed_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_PressurePlateLight>() as IStateAction;
+			StateActions.SA_PressurePlateLight sa = pressed_state.EnterAction as StateActions.SA_PressurePlateLight;
+			sa.State = true;
+		}
+		
+		{
+			OnTriggerEnterTransition t = fsm.AddTransitionType(unpressed_state,typeof(OnTriggerEnterTransition),pressed_state) as OnTriggerEnterTransition;
+			t.Name = "trigger_enter";
+			t.FSM = fsm;
+		}
+		
+		{
+			OnTriggerExitTransition t = fsm.AddTransitionType(pressed_state,typeof(OnTriggerExitTransition),unpressed_state) as OnTriggerExitTransition;
+			t.Name = "trigger_exit";
+			t.FSM = fsm;
+		}
+		fsm.ChangeState(unpressed_state);
+		
+	}
 	// Use this for initialization
 	void Start () {
 		FiniteStateMachine2 fsm = gameObject.GetComponent<FiniteStateMachine2>() as FiniteStateMachine2;
@@ -362,6 +391,9 @@ public class FiniteStateExamples : MonoBehaviour {
 				break;
 			case ExampleType.ToggleMultiColor:
 				DebugToggleMultiColor(fsm);
+				break;
+			case ExampleType.PressurePlateLight:
+				DebugPressurePlateLight(fsm);
 				break;
 		}
 	}
