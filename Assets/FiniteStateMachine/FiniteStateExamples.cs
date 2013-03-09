@@ -1,19 +1,19 @@
 using UnityEngine;
 using System.Collections;
 
-[RequireComponent (typeof (FiniteStateMachine2))]
+[RequireComponent (typeof (FiniteStateMachine))]
 public class FiniteStateExamples : MonoBehaviour {
 	public enum ExampleType {ClickToggle,TimedToggle,Toggle2,ToggleMultiColor,ClickTimedToggle,PressurePlate,PressurePlateLight};
 	
 	public ExampleType Example;
-	static void DebugTest(FiniteStateMachine2 fsm) {
-		FiniteState start_state = new FiniteState();
-		FiniteState red_state = new FiniteState();
-		FiniteState green_state = new FiniteState();
+	static void DebugTest(FiniteStateMachine fsm) {
+		FiniteState start_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
 		
-		start_state.Name = "Start";
-		red_state.Name = "Red";
-		green_state.Name = "Green";
+		start_state.StateName = "Start";
+		red_state.StateName = "Red";
+		green_state.StateName = "Green";
 		
 		{
 			red_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_ChangeColor>() as IStateAction;
@@ -43,21 +43,21 @@ public class FiniteStateExamples : MonoBehaviour {
 			
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(start_state,typeof(OnMouseClick),red_state) as OnMouseClick;
+			Transitions.OnMouseClick t = fsm.AddTransition(start_state,typeof(Transitions.OnMouseClick),red_state) as Transitions.OnMouseClick;
 			t.Name = "click_start";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(red_state,typeof(OnMouseClick),green_state) as OnMouseClick;
+			Transitions.OnMouseClick t = fsm.AddTransition(red_state,typeof(Transitions.OnMouseClick),green_state) as Transitions.OnMouseClick;
 			t.Name = "click_red";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(green_state,typeof(OnMouseClick),red_state) as OnMouseClick;
+			Transitions.OnMouseClick t = fsm.AddTransition(green_state,typeof(Transitions.OnMouseClick),red_state) as Transitions.OnMouseClick;
 			t.Name = "click_green";
-			t.FSM = fsm;
+			
 		}
 		fsm.ChangeState(start_state);
 	}
@@ -65,14 +65,14 @@ public class FiniteStateExamples : MonoBehaviour {
 	/// <summary>
 	/// Create a simple red/green toggling FSM.  Reponds to left-click, alternates colors.
 	/// </summary>
-	static void DebugClickToggle(FiniteStateMachine2 fsm){
-		FiniteState start_state = new FiniteState();
-		FiniteState red_state = new FiniteState();
-		FiniteState green_state = new FiniteState();
+	static void DebugClickToggle(FiniteStateMachine fsm){
+		FiniteState start_state = ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
 		
-		start_state.Name = "Start";
-		red_state.Name = "Red";
-		green_state.Name = "Green";
+		start_state.StateName = "Start";
+		red_state.StateName = "Red";
+		green_state.StateName = "Green";
 		
 		{
 			red_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_ChangeColor>() as IStateAction;
@@ -87,21 +87,24 @@ public class FiniteStateExamples : MonoBehaviour {
 		}
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(start_state,typeof(OnMouseClick),red_state) as OnMouseClick;
+			ITransitionCommand component = fsm.gameObject.AddComponent<Transitions.OnMouseClick>() as ITransitionCommand;
+			Transitions.OnMouseClick t = fsm.AddTransition(start_state,component,red_state) as Transitions.OnMouseClick;
 			t.Name = "click_start";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(red_state,typeof(OnMouseClick),green_state) as OnMouseClick;
+			ITransitionCommand component = fsm.gameObject.AddComponent<Transitions.OnMouseClick>() as ITransitionCommand;
+			Transitions.OnMouseClick t = fsm.AddTransition(red_state,component,green_state) as Transitions.OnMouseClick;
 			t.Name = "click_red";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(green_state,typeof(OnMouseClick),red_state) as OnMouseClick;
+			ITransitionCommand component = fsm.gameObject.AddComponent<Transitions.OnMouseClick>() as ITransitionCommand;
+			Transitions.OnMouseClick t = fsm.AddTransition(green_state,component,red_state) as Transitions.OnMouseClick;
 			t.Name = "click_green";
-			t.FSM = fsm;
+			
 		}
 		fsm.ChangeState(start_state);
 	}
@@ -110,13 +113,13 @@ public class FiniteStateExamples : MonoBehaviour {
 	/// Create a simple timer toggle FSM.  Started with a left click, object alternates between
 	/// red and green every 2 seconds.
 	/// </summary>
-	static void DebugTimedToggle(FiniteStateMachine2 fsm){
-		FiniteState start_state = new FiniteState();
-		FiniteState red_state = new FiniteState();
-		FiniteState green_state = new FiniteState();
-		start_state.Name = "Start";
-		red_state.Name = "Red";
-		green_state.Name = "Green";
+	static void DebugTimedToggle(FiniteStateMachine fsm){
+		FiniteState start_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
+		start_state.StateName = "Start";
+		red_state.StateName = "Red";
+		green_state.StateName = "Green";
 		
 		{
 			red_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_ChangeColor>() as IStateAction;
@@ -131,70 +134,70 @@ public class FiniteStateExamples : MonoBehaviour {
 		}
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(start_state,typeof(OnMouseClick),red_state) as OnMouseClick;
+			Transitions.OnMouseClick t = fsm.AddTransition(start_state,typeof(Transitions.OnMouseClick),red_state) as Transitions.OnMouseClick;
 			t.Name = "click_start";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnTimer2 t = fsm.AddTransitionType(red_state,typeof(OnTimer2),green_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(red_state,typeof(Transitions.OnTimer2),green_state) as Transitions.OnTimer2;
 			t.Name = "timer_red";
-			t.FSM = fsm;
+			
 			t.Delay = 2;
 		}
 		{
-			OnTimer2 t = fsm.AddTransitionType(green_state,typeof(OnTimer2),red_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(green_state,typeof(Transitions.OnTimer2),red_state) as Transitions.OnTimer2;
 			t.Name = "timer_green";
-			t.FSM = fsm;
+			
 			t.Delay = 2;
 		}
 		fsm.ChangeState(start_state);
 	}
-	static void DebugToggle2(FiniteStateMachine2 fsm){
-		/*FiniteState start_state = new FiniteState();
-		FiniteState red_state = new FiniteState();
-		FiniteState green_state = new FiniteState();
-		start_state.Name = "Start";
-		red_state.Name = "Red";
-		green_state.Name = "Green";
+	static void DebugToggle2(FiniteStateMachine fsm){
+		/*FiniteState start_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
+		start_state.StateName = "Start";
+		red_state.StateName = "Red";
+		green_state.StateName = "Green";
 		red_state.EnterAction = FiniteState.TestAction_ChangeColorRed;
 		green_state.EnterAction = FiniteState.TestAction_ChangeColorGreen;
 		
 		{
-			OnTimer2 t = fsm.AddTransitionType(start_state,typeof(OnTimer2),red_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(start_state,typeof(Transitions.OnTimer2),red_state) as Transitions.OnTimer2;
 			t.Name = "timer_start";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnTimer2 t = fsm.AddTransitionType(red_state,typeof(OnTimer2),green_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(red_state,typeof(Transitions.OnTimer2),green_state) as Transitions.OnTimer2;
 			t.Name = "timer_red";
-			t.FSM = fsm;
+			
 			t.Delay = 2;
 		}
 		{
-			OnTimer2 t = fsm.AddTransitionType(green_state,typeof(OnTimer2),red_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(green_state,typeof(Transitions.OnTimer2),red_state) as Transitions.OnTimer2;
 			t.Name = "timer_green";
-			t.FSM = fsm;
+			
 			t.Delay = 2;
 		}
 		fsm.ChangeState(start_state);
 		 */
 	}
-	static void DebugToggleMultiColor(FiniteStateMachine2 fsm){
-		FiniteState start_state 	= new FiniteState();
-		FiniteState red_state 		= new FiniteState();
-		FiniteState green_state 	= new FiniteState();
-		FiniteState blue_state 		= new FiniteState();
-		FiniteState yellow_state 	= new FiniteState();
-		FiniteState magenta_state 	= new FiniteState();
+	static void DebugToggleMultiColor(FiniteStateMachine fsm){
+		FiniteState start_state 	=  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state 		=  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state 	=  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState blue_state 		=  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState yellow_state 	=  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState magenta_state 	=  ScriptableObject.CreateInstance<FiniteState>();
 		
-		start_state.Name 	= "Start";
-		red_state.Name 		= "Red";
-		green_state.Name 	= "Green";
-		blue_state.Name 	= "blue";
-		yellow_state.Name 	= "yellow";
-		magenta_state.Name 	= "magenta";
+		start_state.StateName 	= "Start";
+		red_state.StateName 		= "Red";
+		green_state.StateName 	= "Green";
+		blue_state.StateName 	= "blue";
+		yellow_state.StateName 	= "yellow";
+		magenta_state.StateName 	= "magenta";
 		
 		{
 			red_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_ChangeColor>() as IStateAction;
@@ -226,51 +229,51 @@ public class FiniteStateExamples : MonoBehaviour {
 		}
 		
 		{
-			OnTimer2 t = fsm.AddTransitionType(start_state,typeof(OnTimer2),red_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(start_state,typeof(Transitions.OnTimer2),red_state) as Transitions.OnTimer2;
 			t.Name = "timer_start";
-			t.FSM = fsm;
+			
 			t.Delay = 1.0f;
 		}
 		
 		{
-			OnTimer2 t = fsm.AddTransitionType(red_state,typeof(OnTimer2),green_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(red_state,typeof(Transitions.OnTimer2),green_state) as Transitions.OnTimer2;
 			t.Name = "timer_red";
-			t.FSM = fsm;
+			
 			t.Delay = Random.value * 10.0f;
 		}
 		{
-			OnTimer2 t = fsm.AddTransitionType(green_state,typeof(OnTimer2),blue_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(green_state,typeof(Transitions.OnTimer2),blue_state) as Transitions.OnTimer2;
 			t.Name = "timer_green";
-			t.FSM = fsm;
+			
 			t.Delay = Random.value * 10.0f;
 		}
 		{
-			OnTimer2 t = fsm.AddTransitionType(blue_state,typeof(OnTimer2),yellow_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(blue_state,typeof(Transitions.OnTimer2),yellow_state) as Transitions.OnTimer2;
 			t.Name = "timer_blue";
-			t.FSM = fsm;
+			
 			t.Delay = Random.value * 10.0f;
 		}
 		{
-			OnTimer2 t = fsm.AddTransitionType(yellow_state,typeof(OnTimer2),magenta_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(yellow_state,typeof(Transitions.OnTimer2),magenta_state) as Transitions.OnTimer2;
 			t.Name = "timer_yellow";
-			t.FSM = fsm;
+			
 			t.Delay = Random.value * 10.0f;
 		}
 		{
-			OnTimer2 t = fsm.AddTransitionType(magenta_state,typeof(OnTimer2),red_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(magenta_state,typeof(Transitions.OnTimer2),red_state) as Transitions.OnTimer2;
 			t.Name = "timer_magenta";
-			t.FSM = fsm;
+			
 			t.Delay = Random.value * 10.0f;
 		}
 		fsm.ChangeState(start_state);
 	}
-	static void DebugClickTimedToggle(FiniteStateMachine2 fsm){
-		FiniteState start_state = new FiniteState();
-		FiniteState red_state = new FiniteState();
-		FiniteState green_state = new FiniteState();
-		start_state.Name = "Start";
-		red_state.Name = "Red";
-		green_state.Name = "Green";
+	static void DebugClickTimedToggle(FiniteStateMachine fsm){
+		FiniteState start_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
+		start_state.StateName = "Start";
+		red_state.StateName = "Red";
+		green_state.StateName = "Green";
 		
 		{
 			red_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_ChangeColor>() as IStateAction;
@@ -285,34 +288,34 @@ public class FiniteStateExamples : MonoBehaviour {
 		}
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(start_state,typeof(OnMouseClick),red_state) as OnMouseClick;
+			Transitions.OnMouseClick t = fsm.AddTransition(start_state,typeof(Transitions.OnMouseClick),red_state) as Transitions.OnMouseClick;
 			t.Name = "click_start";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(red_state,typeof(OnMouseClick),green_state) as OnMouseClick;
+			Transitions.OnMouseClick t = fsm.AddTransition(red_state,typeof(Transitions.OnMouseClick),green_state) as Transitions.OnMouseClick;
 			t.Name = "click_red";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnMouseClick t = fsm.AddTransitionType(green_state,typeof(OnMouseClick),red_state) as OnMouseClick;
+			Transitions.OnMouseClick t = fsm.AddTransition(green_state,typeof(Transitions.OnMouseClick),red_state) as Transitions.OnMouseClick;
 			t.Name = "click_green";
-			t.FSM = fsm;
+			
 		}
 		{
-			OnTimer2 t = fsm.AddTransitionType(green_state,typeof(OnTimer2),red_state) as OnTimer2;
+			Transitions.OnTimer2 t = fsm.AddTransition(green_state,typeof(Transitions.OnTimer2),red_state) as Transitions.OnTimer2;
 			t.Name = "click_green";
-			t.FSM = fsm;
+			
 			t.Delay = 2;
 		}
 		fsm.ChangeState(start_state);
 	}
 	
-	static void DebugPressurePlate(FiniteStateMachine2 fsm){
-		FiniteState unpressed_state = new FiniteState();
-		FiniteState pressed_state = new FiniteState();
+	static void DebugPressurePlate(FiniteStateMachine fsm){
+		FiniteState unpressed_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState pressed_state =  ScriptableObject.CreateInstance<FiniteState>();
 		
 		{
 			unpressed_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_PressurePlateColor>() as IStateAction;
@@ -327,22 +330,22 @@ public class FiniteStateExamples : MonoBehaviour {
 		}
 		
 		{
-			OnTriggerEnterTransition t = fsm.AddTransitionType(unpressed_state,typeof(OnTriggerEnterTransition),pressed_state) as OnTriggerEnterTransition;
+			Transitions.OnTriggerEnterTransition t = fsm.AddTransition(unpressed_state,typeof(Transitions.OnTriggerEnterTransition),pressed_state) as Transitions.OnTriggerEnterTransition;
 			t.Name = "trigger_enter";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnTriggerExitTransition t = fsm.AddTransitionType(pressed_state,typeof(OnTriggerExitTransition),unpressed_state) as OnTriggerExitTransition;
+			Transitions.OnTriggerExitTransition t = fsm.AddTransition(pressed_state,typeof(Transitions.OnTriggerExitTransition),unpressed_state) as Transitions.OnTriggerExitTransition;
 			t.Name = "trigger_exit";
-			t.FSM = fsm;
+			
 		}
 		fsm.ChangeState(unpressed_state);
 		
 	}
-	static void DebugPressurePlateLight(FiniteStateMachine2 fsm){
-		FiniteState unpressed_state = new FiniteState();
-		FiniteState pressed_state = new FiniteState();
+	static void DebugPressurePlateLight(FiniteStateMachine fsm){
+		FiniteState unpressed_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState pressed_state =  ScriptableObject.CreateInstance<FiniteState>();
 		
 		{
 			//unpressed_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_PressurePlateLight>() as IStateAction;
@@ -357,22 +360,22 @@ public class FiniteStateExamples : MonoBehaviour {
 		}
 		
 		{
-			OnTriggerEnterTransition t = fsm.AddTransitionType(unpressed_state,typeof(OnTriggerEnterTransition),pressed_state) as OnTriggerEnterTransition;
+			Transitions.OnTriggerEnterTransition t = fsm.AddTransition(unpressed_state,typeof(Transitions.OnTriggerEnterTransition),pressed_state) as Transitions.OnTriggerEnterTransition;
 			t.Name = "trigger_enter";
-			t.FSM = fsm;
+			
 		}
 		
 		{
-			OnTriggerExitTransition t = fsm.AddTransitionType(pressed_state,typeof(OnTriggerExitTransition),unpressed_state) as OnTriggerExitTransition;
+			Transitions.OnTriggerExitTransition t = fsm.AddTransition(pressed_state,typeof(Transitions.OnTriggerExitTransition),unpressed_state) as Transitions.OnTriggerExitTransition;
 			t.Name = "trigger_exit";
-			t.FSM = fsm;
+			
 		}
 		fsm.ChangeState(unpressed_state);
 		
 	}
 	// Use this for initialization
 	void Start () {
-		FiniteStateMachine2 fsm = gameObject.GetComponent<FiniteStateMachine2>() as FiniteStateMachine2;
+		FiniteStateMachine fsm = gameObject.GetComponent<FiniteStateMachine>() as FiniteStateMachine;
 		switch(Example){
 			case ExampleType.ClickToggle:
 				DebugClickToggle(fsm);

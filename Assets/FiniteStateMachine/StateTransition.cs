@@ -12,34 +12,10 @@ using System.Collections;
 /// </notes>
 class StateTransition
 {
-    public readonly FiniteState CurrentState;
-    public readonly ITransitionCommand Command;
-
-    public StateTransition(FiniteState currentState, ITransitionCommand command)
-    {
-        CurrentState = currentState;
-        Command = command;
-    }
-
-    public override int GetHashCode()
-    {
-        return 17 + 31 * CurrentState.GetHashCode() + 31 * Command.GetHashCode();
-    }
-
-    public override bool Equals(object obj)
-    {
-        StateTransition other = obj as StateTransition;
-        return other != null && this.CurrentState == other.CurrentState && this.Command == other.Command;
-    }
-}
-
-//[System.Serializable]
-class StateTransition2
-{
     public FiniteState CurrentState;
-    public ITransitionCommand2 TransitionComponent;
+    public ITransitionCommand TransitionComponent;
 
-    public StateTransition2(FiniteState currentState, ITransitionCommand2 component)
+    public StateTransition(FiniteState currentState, ITransitionCommand component)
     {
         CurrentState = currentState;
         TransitionComponent = component;
@@ -52,11 +28,7 @@ class StateTransition2
 
     public override bool Equals(object obj)
     {
-        StateTransition2 other = obj as StateTransition2;
-		Debug.Log("Equality");
-		Debug.Log("  Null?: - " + (other == null).ToString());
-		Debug.Log("  States?: - " + (this.CurrentState == other.CurrentState).ToString());
-		Debug.Log("  Trans'?: - " + (this.TransitionComponent == other.TransitionComponent).ToString());
+        StateTransition other = obj as StateTransition;
         return 	other != null && 
 				this.CurrentState == other.CurrentState && 
 				this.TransitionComponent == other.TransitionComponent;

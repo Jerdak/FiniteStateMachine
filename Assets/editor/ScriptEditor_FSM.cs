@@ -1,39 +1,29 @@
 using UnityEngine;
 using UnityEditor;
-using System.Collections;
 using System.Collections.Generic;
 
+[ExecuteInEditMode]
 public class ScriptEditor_FSM: EditorWindow {
-	FiniteStateMachine2 FSM = null;
+	FiniteStateMachine FSM = null;
 	
-	class TransitionButton {
-		public Rect rect = new Rect(0,0,100,50);
-		public ITransitionCommand2 transition;
-	};
 	class StateWindow {	
 		public FiniteState state = null;
-		public Rect rect = new Rect(0,0,100,100);
-		public List<TransitionButton> transitions = new List<TransitionButton>();
 	};
 	class TransitionPair {
 		public FiniteState fromState = null;
 		public FiniteState toState = null;
-		public int fromStateIndex = -1;
-		public int toStateIndex = -1;
 	};
-	List<StateWindow> States = new List<StateWindow>();
-	List<FiniteState> FiniteStates = new List<FiniteState>();
-	List<TransitionPair> Transitions = new List<TransitionPair>();
 	
+	Dictionary<FiniteState,StateWindow> StateWindowMap = new Dictionary<FiniteState,StateWindow>();
+	List<StateWindow> StateWindows = new List<StateWindow>();
+	List<TransitionPair> Transitions = new List<TransitionPair>();
+
     [MenuItem("Window/ScriptEditor_FSM")]
     static void init()
     {
         ScriptEditorDebughelpers_FSM.openScriptEditor();
     }
-	void AddState(){
-	
-	}
-	
+
     void curveFromTo(Rect wr, Rect wr2, Color color, Color shadow)
     {
         Drawing.bezierLine(
@@ -48,47 +38,98 @@ public class ScriptEditor_FSM: EditorWindow {
             new Vector2(wr2.x - Mathf.Abs(wr2.x - (wr.x + wr.width)) / 2, wr2.y + wr2.height / 2), color, 2, true,20);
     }
 	
+	void OnSelectionChange(){
+		Repaint();
+	}
+	
 	void Update(){
 		if(Selection.gameObjects.Length != 0){
 			GameObject go = Selection.gameObjects[0];
-			FSM = go.GetComponent<FiniteStateMachine2>() as FiniteStateMachine2;
+			FiniteStateMachine tmp = go.GetComponent<FiniteStateMachine>() as FiniteStateMachine;
+			UpdateFSM(tmp);
 		}
 	}
-	
+	void UpdateFSM(FiniteStateMachine fsm){
+		if(fsm == FSM)return;
+		Debug.Log("Updating FSM editor w/ new FSM");
+		
+		FSM = fsm;
+		StateWindowMap.Clear();
+		StateWindows.Clear();
+		Transitions.Clear();
+		if(FSM == null)return;
+		
+		List<FiniteState> states;
+		List<StateTransitionState> transitions;
+		FSM.GetGraph(out states, out transitions);
+		
+		foreach(FiniteState state in states){
+			Debug.Log("Adding new state <" + state.StateName + ">");
+		
+			AddStateWindow(state);
+		}
+		foreach(StateTransitionState sts in transitions){
+			Transitions.Add(new TransitionPair{fromState = sts.StartState,toState = sts.EndState});
+		}
+	}
+	void AddStateWindow(FiniteState state){
+		StateWindow wnd = new StateWindow();
+		state.WindowRect.width = Mathf.Clamp(state.WindowRect.width,100,Mathf.Infinity);
+		state.WindowRect.height = Mathf.Clamp(state.WindowRect.height,100,Mathf.Infinity);
+		wnd.state = state;
+		StateWindowMap.Add(state,wnd);
+		StateWindows.Add(wnd);
+	}
 	void AddState(object obj){
 		if(FSM == null) {
 			Debug.Log("No FSM selected");
 			return;
 		}
-		FiniteState state 	= new FiniteState();
-		state.EnterAction = FSM.gameObject.AddComponent<StateActions.SA_ChangeColor>() as IStateAction;
-		state.Name = "change_color";
-			
+		FiniteState state = ScriptableObject.CreateInstance<FiniteState>();
 		Vector2 pos = (Vector2)obj;
-		StateWindow wnd = new StateWindow();
-		wnd.rect.x = pos.x;
-		wnd.rect.y = pos.y;
-		States.Add(wnd);
-		FiniteStates.Add(state);
+		state.EnterAction = FSM.gameObject.AddComponent<StateActions.SA_ChangeColor>() as IStateAction;
+		state.StateName = FSM.UniqueName("change_color");
+		state.WindowRect = new Rect(pos.x,pos.y,100,100);
+		FSM.AddState(state);
+		AddStateWindow(state);
+
+		EditorUtility.SetDirty(state);
 		EditorUtility.SetDirty(FSM);
-		
 	}
 	void AttachFSM(object obj){
 		if(Selection.gameObjects.Length == 0){
 			return;
 		}
 		GameObject go = Selection.gameObjects[0];
-		go.AddComponent<FiniteStateMachine2>();
+		go.AddComponent<FiniteStateMachine>();
+	}
+	void Purge(object obj){
+		if(Selection.gameObjects.Length == 0){
+			return;
+		}
+		GameObject go = Selection.gameObjects[0];
+		foreach(FiniteStateMachine fsm in go.GetComponents<FiniteStateMachine>()){
+			DestroyImmediate(fsm);
+		}
+		foreach( ITransitionCommand transition in go.GetComponents<ITransitionCommand>()){
+			DestroyImmediate(transition);
+		}
+		foreach( IStateAction state in go.GetComponents<IStateAction>()){
+			DestroyImmediate(state);
+		}
+		
+		FSM = null;
+		StateWindowMap.Clear();
+		StateWindows.Clear();
+		Transitions.Clear();
 	}
 	void AddTransition(object obj){
 		TransitionPair tp = (TransitionPair)obj;
 		{
-			OnTimer2 t = FSM.AddTransitionType(tp.fromState,typeof(OnTimer2),tp.toState) as OnTimer2;
+			Transitions.OnTimer2 t = FSM.AddTransition(tp.fromState,typeof(Transitions.OnTimer2),tp.toState) as Transitions.OnTimer2;
 			t.Name = "timer_transition";
-			t.FSM = FSM;
 			t.Delay = 2.0f;
 			EditorUtility.SetDirty(t);
-			
 		}
 		Transitions.Add(tp);
 		EditorUtility.SetDirty(FSM);
@@ -104,12 +145,10 @@ public class ScriptEditor_FSM: EditorWindow {
 		Debug.Log("StateContextMenu::ContextClick");
 		
 		GenericMenu menu = new GenericMenu();
-		int index = 0;
-		foreach(StateWindow wnd in States){
-			if(!wnd.rect.Contains(evt.mousePosition)){
-				menu.AddItem (new GUIContent ("Add/TransitionTo/"+ FiniteStates[index].Name), false, AttachFSM, evt.mousePosition);
+		foreach(StateWindow wnd in StateWindowMap.Values){
+			if(!wnd.state.WindowRect.Contains(evt.mousePosition)){
+				menu.AddItem (new GUIContent ("Add/TransitionTo/"+ wnd.state.StateName), false, AttachFSM, evt.mousePosition);
 			}
-			index += 1;
 		}
 		menu.ShowAsContext ();
 		evt.Use();
@@ -123,6 +162,8 @@ public class ScriptEditor_FSM: EditorWindow {
 			} else {
 				menu.AddItem (new GUIContent ("Add/NewState/ChangeColor"), false, AddState,evt.mousePosition);
 	       	}
+			menu.AddSeparator("");
+			menu.AddItem (new GUIContent ("Purge"), false, Purge, evt.mousePosition);
             menu.ShowAsContext ();
 			evt.Use();
 			Debug.Log("OnContextMenu::ContextClick");
@@ -132,27 +173,26 @@ public class ScriptEditor_FSM: EditorWindow {
 		
 	}
 	void SetStartState(object obj){
-		int id = (int)obj;
-		FiniteState state = FiniteStates[id];
-		FSM.ChangeState(state);
+		FSM.StartState = (FiniteState)obj;
 		EditorUtility.SetDirty(FSM);
 	}
 	void OnTransitionButton(int id){
 		GenericMenu menu = new GenericMenu();
 		int index = 0;
-		foreach(StateWindow wnd in States){
+		foreach(StateWindow wnd in StateWindows){	
+			
 			if(index != id){
 				menu.AddItem (
-					new GUIContent ("Add/TransitionTo/" + FiniteStates[index].Name), 
+					new GUIContent ("Add/TransitionTo/" + wnd.state.StateName), 
 					false, 
 					AddTransition, 
-					new TransitionPair{fromState = FiniteStates[id],fromStateIndex = id,
-									   toState = FiniteStates[index],toStateIndex = index}
+					new TransitionPair{fromState = StateWindows[id].state,
+									   toState = StateWindows[index].state}
 				);
 			}
 			index += 1;
 		}
-		menu.AddItem (new GUIContent ("SetStart"),false,SetStartState,id);
+		menu.AddItem (new GUIContent ("SetStart"),false,SetStartState,StateWindows[id].state);
 		menu.ShowAsContext ();
 		EditorUtility.SetDirty(FSM);
 	}
@@ -165,13 +205,16 @@ public class ScriptEditor_FSM: EditorWindow {
     }
 	void OnGUI()
     {
+		if(Event.current.button == 1 && Event.current.isMouse ){
+			//Debug.Log("Right click");
+		}
 		OnContextMenu();
-		
+
 		foreach(TransitionPair tp in Transitions){
 			Color base_color = new Color(0.4f, 0.4f, 0.5f);
         	curveFromTo(
-				States[tp.fromStateIndex].rect, 
-				States[tp.toStateIndex].rect, 
+				tp.fromState.WindowRect, 
+				tp.toState.WindowRect, 
 				new Color(0.3f,0.7f,0.4f), 
 				base_color
 			);
@@ -188,9 +231,9 @@ public class ScriptEditor_FSM: EditorWindow {
         EndWindows();*/
 		BeginWindows();
 		int index = 0;
-		
-		foreach(StateWindow wnd in States){
-			wnd.rect = GUI.Window(index++, wnd.rect, doWindow, "hello");
+		foreach(StateWindow wnd in StateWindows){
+			wnd.state.WindowRect = GUI.Window(index++, wnd.state.WindowRect, doWindow, wnd.state.StateName);
+			EditorUtility.SetDirty(FSM);
 		}
 		EndWindows();
     }

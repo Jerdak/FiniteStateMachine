@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 [ExecuteInEditMode]
 public class IStateAction : MonoBehaviour {
-	public string Name = "";
+	public string StateName = "";
 	public string Description = "";
 	
 	public virtual void Act(){}
