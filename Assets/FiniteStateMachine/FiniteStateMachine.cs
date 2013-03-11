@@ -22,7 +22,7 @@ public class FiniteStateMachine : MonoBehaviour {
 	/// Complete state/transition/state list for rebuilding state/transition dictionaries on deserialization
 	/// </summary>
 	[SerializeField]
-	List<StateTransitionState> StateCache = new List<StateTransitionState>();
+	public List<StateTransitionState> StateCache = new List<StateTransitionState>();
 	
 	/// <summary>
 	/// List of transitions for the current state only
@@ -42,19 +42,27 @@ public class FiniteStateMachine : MonoBehaviour {
 		states = new List<FiniteState>();
 		transitions = new List<StateTransitionState>();
 		
-		Dictionary<FiniteState,bool> stateMap = new Dictionary<FiniteState, bool>();
+		Dictionary<FiniteState,FiniteState> stateMap = new Dictionary<FiniteState, FiniteState>();
 		Dictionary<StateTransitionState,bool> transitionMap = new Dictionary<StateTransitionState, bool>();
 		foreach(StateTransitionState sts in StateCache){
+			
 			if(sts.StartState && !stateMap.ContainsKey(sts.StartState)){
-				stateMap.Add(sts.StartState,true);
+				stateMap.Add(sts.StartState,sts.StartState);
 				states.Add(sts.StartState);
+			} else if(sts.StartState) {
+				sts.StartState = stateMap[sts.StartState];
 			}
+			
 			if(sts.EndState && !stateMap.ContainsKey(sts.EndState)){
-				stateMap.Add(sts.EndState,true);
+				stateMap.Add(sts.EndState,sts.EndState);
 				states.Add(sts.EndState);
+				Debug.Log("Added EndState: "+sts.EndState.UniqueID);
+			}else if(sts.EndState) {
+				Debug.Log("Updating EndState: "+sts.EndState.UniqueID);
+				sts.EndState = stateMap[sts.EndState];
 			}
-			//valid sts' contain non-null startstate, endstate, and transition
-			//orphan'd states will be included in 'states'
+		}
+		foreach(StateTransitionState sts in StateCache){
 			if(sts.Valid() && !transitionMap.ContainsKey(sts))
 			{
 				transitionMap.Add(sts,true);
@@ -62,34 +70,57 @@ public class FiniteStateMachine : MonoBehaviour {
 			}
 		}
 	}
-	
+	//TODO:  This probably doesn't need to be static since each FSM will self contain its states
+	public static FiniteState CreateState(){
+		nameSalt += 1;
+		return new FiniteState{UniqueID=nameSalt};
+	}
+	public void SetStart(FiniteState start){
+		SetStart(start,true);
+	}
+	public void SetStart(FiniteState start,bool clear){
+		if(clear){
+			foreach(StateTransitionState sts in StateCache){
+				if(sts.StartState != null)sts.StartState.Start = false;
+			}
+		}
+		start.Start = true;
+		StartState = start;
+	}
 	/// <summary>
 	/// Called by 'awake()' to rebuild dictionaries, which Unity doesn't serialize
 	/// </summary>
 	void RebuildStateTransitionMap(){
 		TransitionMap.Clear();
 		StateTransitions.Clear();
+		StartState = null;
+		CurrentState = null;
 		
+		//Debug.Log("Rebuilding transition map");
 		//Unity serialization doesn't work w/ Generic.Dictionary, rebuild from state list
 		foreach(StateTransitionState sts in StateCache){
  			AddState(sts.StartState,false);
 			AddState(sts.EndState,false);
 			
-			if(sts.StartState && sts.Transition) {
+			if(sts.StartState!=null && sts.Transition!=null) {
 				StateTransition st = new StateTransition(sts.StartState,sts.Transition);
 				StateTransitions.Add(st,sts.EndState);
 				
 				TransitionMap[sts.StartState].Add(sts.Transition);
+				
+				if(sts.StartState.Start = true){
+					SetStart(sts.StartState,false);
+				}
 			}
 			
-			if(sts.Valid())
-				Debug.Log("Rebuilding transition from " + sts.StartState.StateName + " to " + sts.EndState.StateName);
-			else if(sts.StartState && !sts.EndState){
-				Debug.Log("Rebuilding start state w/ no end state <" + sts.StartState.StateName + ">");
-			} else if(!sts.StartState && sts.EndState){
-				Debug.Log("Rebuilding end state w/ no start state <" + sts.EndState.StateName + ">");
-			} else if(!sts.StartState && !sts.EndState && sts.Transition){
-				Debug.Log("Warning, disconnected transition <" + sts.Transition.Name + ">");
+			if(sts.Valid()){
+				//Debug.Log("Rebuilding transition from " + sts.StartState.StateName + " to " + sts.EndState.StateName);
+			} else if(sts.StartState!=null && sts.EndState==null){
+				//Debug.Log("Rebuilding start state w/ no end state <" + sts.StartState.StateName + ">");
+			} else if(sts.StartState==null && sts.EndState!=null){
+				//Debug.Log("Rebuilding end state w/ no start state <" + sts.EndState.StateName + ">");
+			} else if(sts.StartState==null && sts.EndState==null && sts.Transition==null){
+				//Debug.Log("Warning, disconnected transition <" + sts.Transition.Name + ">");
 			}
 		}
 		//StateTransition st1 = new StateTransition(StateCache[0].StartState,StateCache[0].Transition);
@@ -126,11 +157,15 @@ public class FiniteStateMachine : MonoBehaviour {
 	/// If true, state is stored in the StateCache for serialization
 	/// </param>
 	public void AddState(FiniteState state, bool cache){
-		if(state==null)return;
+		if(!state){
+			//Debug.Log("Couldn't add state, null");
+			return;
+		}
 		if(!TransitionMap.ContainsKey(state)){
 			TransitionMap.Add(state,new List<ITransitionCommand>());
+			//Debug.Log("Adding state: " + state.UniqueID);
 			if(cache) {
-				StateTransitionState sts = ScriptableObject.CreateInstance<StateTransitionState>() as StateTransitionState;
+				StateTransitionState sts = new StateTransitionState();//ScriptableObject.CreateInstance<StateTransitionState>() as StateTransitionState;
 				sts.StartState = state;	
 				StateCache.Add(sts);
 			}
@@ -163,7 +198,7 @@ public class FiniteStateMachine : MonoBehaviour {
 		TransitionMap[fromState].Add(transition);
 		
 		if(cache){
-			StateTransitionState sts = ScriptableObject.CreateInstance<StateTransitionState>() as StateTransitionState;
+			StateTransitionState sts = new StateTransitionState();//ScriptableObject.CreateInstance<StateTransitionState>() as StateTransitionState;
 			sts.StartState = fromState;	
 			sts.EndState = toState;
 			sts.Transition = transition;
@@ -236,7 +271,7 @@ public class FiniteStateMachine : MonoBehaviour {
 	/// Change to the next state and update the currently active transitions.
 	/// </summary>
 	public void ChangeState(FiniteState nextState){
-		if(nextState == null) {
+		if(!nextState) {
 			Debug.Log("Change state ignored, nextState == null");
 			return;
 		}
@@ -245,7 +280,7 @@ public class FiniteStateMachine : MonoBehaviour {
 		SetActiveComponentsEnabled(false);
 		
 		// apply transition logic from current state
-		if(CurrentState != null){
+		if(CurrentState){
 			CurrentState.ExitState(gameObject);
 			CurrentState.DisableStateChanges();
 		}

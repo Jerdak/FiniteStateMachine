@@ -69,12 +69,13 @@ public class ScriptEditor_FSM: EditorWindow {
 			AddStateWindow(state);
 		}
 		foreach(StateTransitionState sts in transitions){
+			Debug.Log("Adding new transition from <" + sts.StartState.StateName + "> to <" + sts.EndState.StateName + ">");
 			Transitions.Add(new TransitionPair{fromState = sts.StartState,toState = sts.EndState});
 		}
 	}
 	void AddStateWindow(FiniteState state){
 		StateWindow wnd = new StateWindow();
-		state.WindowRect.width = Mathf.Clamp(state.WindowRect.width,100,Mathf.Infinity);
+		state.WindowRect.width = Mathf.Clamp(state.WindowRect.width,150,Mathf.Infinity);
 		state.WindowRect.height = Mathf.Clamp(state.WindowRect.height,100,Mathf.Infinity);
 		wnd.state = state;
 		StateWindowMap.Add(state,wnd);
@@ -85,7 +86,7 @@ public class ScriptEditor_FSM: EditorWindow {
 			Debug.Log("No FSM selected");
 			return;
 		}
-		FiniteState state = ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState state = FiniteStateMachine.CreateState();//ScriptableObject.CreateInstance<FiniteState>();
 		Vector2 pos = (Vector2)obj;
 		state.EnterAction = FSM.gameObject.AddComponent<StateActions.SA_ChangeColor>() as IStateAction;
 		state.StateName = FSM.UniqueName("change_color");
@@ -93,7 +94,7 @@ public class ScriptEditor_FSM: EditorWindow {
 		FSM.AddState(state);
 		AddStateWindow(state);
 
-		EditorUtility.SetDirty(state);
+		//EditorUtility.SetDirty(state);
 		EditorUtility.SetDirty(FSM);
 	}
 	void AttachFSM(object obj){
@@ -129,6 +130,16 @@ public class ScriptEditor_FSM: EditorWindow {
 			Transitions.OnTimer2 t = FSM.AddTransition(tp.fromState,typeof(Transitions.OnTimer2),tp.toState) as Transitions.OnTimer2;
 			t.Name = "timer_transition";
 			t.Delay = 2.0f;
+			EditorUtility.SetDirty(t);
+		}
+		Transitions.Add(tp);
+		EditorUtility.SetDirty(FSM);
+	}
+	void AddTransitionRandom(object obj){
+		TransitionPair tp = (TransitionPair)obj;
+		{
+			Transitions.OnTimerRandom t = FSM.AddTransition(tp.fromState,typeof(Transitions.OnTimerRandom),tp.toState) as Transitions.OnTimerRandom;
+			t.Name = "random_timer_transition";
 			EditorUtility.SetDirty(t);
 		}
 		Transitions.Add(tp);
@@ -183,12 +194,20 @@ public class ScriptEditor_FSM: EditorWindow {
 			
 			if(index != id){
 				menu.AddItem (
-					new GUIContent ("Add/TransitionTo/" + wnd.state.StateName), 
+					new GUIContent ("Add/TimerTransition/" + wnd.state.StateName), 
 					false, 
 					AddTransition, 
 					new TransitionPair{fromState = StateWindows[id].state,
 									   toState = StateWindows[index].state}
 				);
+				menu.AddItem (
+					new GUIContent ("Add/RandomTimerTransition/" + wnd.state.StateName), 
+					false, 
+					AddTransitionRandom, 
+					new TransitionPair{fromState = StateWindows[id].state,
+									   toState = StateWindows[index].state}
+				);
+				
 			}
 			index += 1;
 		}

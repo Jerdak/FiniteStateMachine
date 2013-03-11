@@ -71,4 +71,23 @@ namespace Transitions {
 			}
 		}	
 	}
+	public class OnTimerRandom : ITransitionCommand {
+		public float Delay = 0;
+		public float ElapsedTime = 0;
+		
+		public override void ResetTransition(){
+			ElapsedTime = 0.0f;
+		}
+		public void Start(){
+			Delay = Random.Range(0.0f,4.0f);
+			ElapsedTime = 0.0f;
+		}
+	
+		public void Update(){
+			ElapsedTime += Time.deltaTime;
+			if (ElapsedTime >= Delay){
+				NotifyFsm();
+			}
+		}	
+	}
 }	//end namespace Transitions
