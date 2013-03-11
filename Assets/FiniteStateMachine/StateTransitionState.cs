@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using UnityEngine;
 
 [Serializable]
-public class StateTransitionState : ScriptableObject {
+public class StateTransitionState  {
 	public FiniteState StartState = null;
 	public ITransitionCommand Transition = null;
 	public FiniteState EndState = null;
@@ -13,6 +13,6 @@ public class StateTransitionState : ScriptableObject {
 	/// Return true iff StartState, EndState, and Transition are all non-null
 	/// </summary>
 	public bool Valid(){
-		return (StartState != null && EndState != null && Transition != null);
+		return (StartState && EndState && Transition != null);
 	}
 }
