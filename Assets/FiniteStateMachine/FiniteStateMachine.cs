@@ -84,6 +84,7 @@ public class FiniteStateMachine : MonoBehaviour {
 				if(sts.StartState != null)sts.StartState.Start = false;
 			}
 		}
+		Debug.Log("Setting Start: " + start.UniqueID);
 		start.Start = true;
 		StartState = start;
 	}
@@ -108,7 +109,7 @@ public class FiniteStateMachine : MonoBehaviour {
 				
 				TransitionMap[sts.StartState].Add(sts.Transition);
 				
-				if(sts.StartState.Start = true){
+				if(sts.StartState.Start == true){
 					SetStart(sts.StartState,false);
 				}
 			}
@@ -296,6 +297,7 @@ public class FiniteStateMachine : MonoBehaviour {
 	}
 	
 	void Start(){
+		Debug.Log("Starting state: " + StartState.UniqueID);
 		ChangeState(StartState);
 	}
 }

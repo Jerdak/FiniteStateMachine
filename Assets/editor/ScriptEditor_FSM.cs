@@ -184,7 +184,7 @@ public class ScriptEditor_FSM: EditorWindow {
 		
 	}
 	void SetStartState(object obj){
-		FSM.StartState = (FiniteState)obj;
+		FSM.SetStart((FiniteState)obj);
 		EditorUtility.SetDirty(FSM);
 	}
 	void OnTransitionButton(int id){
