@@ -7,9 +7,9 @@ public class FiniteStateExamples : MonoBehaviour {
 	
 	public ExampleType Example;
 	static void DebugTest(FiniteStateMachine fsm) {
-		FiniteState start_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState start_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
 		
 		start_state.StateName = "Start";
 		red_state.StateName = "Red";
@@ -66,9 +66,9 @@ public class FiniteStateExamples : MonoBehaviour {
 	/// Create a simple red/green toggling FSM.  Reponds to left-click, alternates colors.
 	/// </summary>
 	static void DebugClickToggle(FiniteStateMachine fsm){
-		FiniteState start_state = ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState start_state = new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
 		
 		start_state.StateName = "Start";
 		red_state.StateName = "Red";
@@ -114,9 +114,9 @@ public class FiniteStateExamples : MonoBehaviour {
 	/// red and green every 2 seconds.
 	/// </summary>
 	static void DebugTimedToggle(FiniteStateMachine fsm){
-		FiniteState start_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState start_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
 		start_state.StateName = "Start";
 		red_state.StateName = "Red";
 		green_state.StateName = "Green";
@@ -154,9 +154,9 @@ public class FiniteStateExamples : MonoBehaviour {
 		fsm.ChangeState(start_state);
 	}
 	static void DebugToggle2(FiniteStateMachine fsm){
-		/*FiniteState start_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
+		/*FiniteState start_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
 		start_state.StateName = "Start";
 		red_state.StateName = "Red";
 		green_state.StateName = "Green";
@@ -185,12 +185,12 @@ public class FiniteStateExamples : MonoBehaviour {
 		 */
 	}
 	static void DebugToggleMultiColor(FiniteStateMachine fsm){
-		FiniteState start_state 	=  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState red_state 		=  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState green_state 	=  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState blue_state 		=  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState yellow_state 	=  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState magenta_state 	=  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState start_state 	=  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state 		=  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state 	=  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState blue_state 		=  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState yellow_state 	=  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState magenta_state 	=  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
 		
 		start_state.StateName 	= "Start";
 		red_state.StateName 		= "Red";
@@ -268,9 +268,9 @@ public class FiniteStateExamples : MonoBehaviour {
 		fsm.ChangeState(start_state);
 	}
 	static void DebugClickTimedToggle(FiniteStateMachine fsm){
-		FiniteState start_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState red_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState green_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState start_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState red_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState green_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
 		start_state.StateName = "Start";
 		red_state.StateName = "Red";
 		green_state.StateName = "Green";
@@ -314,8 +314,8 @@ public class FiniteStateExamples : MonoBehaviour {
 	}
 	
 	static void DebugPressurePlate(FiniteStateMachine fsm){
-		FiniteState unpressed_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState pressed_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState unpressed_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState pressed_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
 		
 		{
 			unpressed_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_PressurePlateColor>() as IStateAction;
@@ -344,8 +344,8 @@ public class FiniteStateExamples : MonoBehaviour {
 		
 	}
 	static void DebugPressurePlateLight(FiniteStateMachine fsm){
-		FiniteState unpressed_state =  ScriptableObject.CreateInstance<FiniteState>();
-		FiniteState pressed_state =  ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState unpressed_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
+		FiniteState pressed_state =  new FiniteState();//ScriptableObject.CreateInstance<FiniteState>();
 		
 		{
 			//unpressed_state.EnterAction = fsm.gameObject.AddComponent<StateActions.SA_PressurePlateLight>() as IStateAction;
