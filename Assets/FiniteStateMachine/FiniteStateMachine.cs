@@ -297,7 +297,7 @@ public class FiniteStateMachine : MonoBehaviour {
 	}
 	
 	void Start(){
-		Debug.Log("Starting state: " + StartState.UniqueID);
+		//Debug.Log("Starting state: " + StartState.UniqueID);
 		ChangeState(StartState);
 	}
 }
